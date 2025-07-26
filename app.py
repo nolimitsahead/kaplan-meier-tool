@@ -15,8 +15,10 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
     data = pd.read_excel(uploaded_file)
     data["Group"] = data["Group"].str.strip()
     data["Event"] = data["Event"].astype(int)
+
     if day_unit == "d":
         data["Time"] = data["Time"] / 30.4375
+
     if cutoff_month:
         data.loc[data["Time"] > cutoff_month, "Time"] = cutoff_month
         data.loc[(data["Time"] == cutoff_month) & (data["Event"] == 1), "Event"] = 0
@@ -26,6 +28,7 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
         if analysis_type == "OS"
         else f"Tỉ lệ sống không bệnh tiến triển {analysis_type}"
     )
+
     plt.figure(figsize=(10, 6))
     kmf = KaplanMeierFitter()
     median_dict = {}
@@ -48,9 +51,6 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
     plt.ylabel(f"{y_label} (%)")
     plt.axhline(0.5, color="gray", linestyle="--")
     plt.legend(title="Nhóm điều trị")
-    plt.tight_layout()
-
-    st.pyplot(plt)
 
     # HR và p-value
     group1, group2 = data["Group"].unique()
@@ -72,6 +72,27 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
     ci_up = summary.loc["Group_code", "exp(coef) upper 95%"]
     p_val = lr_test.p_value
 
+    # 🆕 Thêm text dưới biểu đồ
+    text_str = (
+        f"{group1} Median {analysis_type}: {median_dict[group1]} tháng\n"
+        f"{group2} Median {analysis_type}: {median_dict[group2]} tháng\n"
+        f"HR = {hr:.2f} (95% CI: {ci_low:.2f}–{ci_up:.2f})\n"
+        f"P = {p_val:.3f}"
+    )
+    plt.gcf().text(
+        0.1,
+        -0.15,
+        text_str,
+        fontsize=10,
+        ha="left",
+        va="center",
+        bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="white"),
+    )
+
+    plt.tight_layout()
+    st.pyplot(plt)
+
+    # Kết quả chi tiết (text riêng bên dưới)
     st.markdown(
         f"""
     ### 📊 Kết quả:

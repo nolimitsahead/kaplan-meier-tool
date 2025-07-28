@@ -35,10 +35,14 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
 
     for group in data["Group"].unique():
         group_data = data[data["Group"] == group]
+        n_patients = len(group_data)
+        n_events = group_data["Event"].sum()
+        label_text = f"{group} (n={n_patients}, events={n_events})"
+
         kmf.fit(
             durations=group_data["Time"],
             event_observed=group_data["Event"],
-            label=group,
+            label=label_text,
         )
         kmf.plot_survival_function(ci_show=True)
         median = kmf.median_survival_time_

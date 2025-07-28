@@ -102,3 +102,29 @@ if uploaded_file and st.button("📈 Vẽ biểu đồ"):
     - **P-value** = {p_val:.3f}
     """
     )
+
+    # 🆕 Export dữ liệu cho SPSS
+    st.markdown("### 📤 Export dữ liệu dùng cho SPSS")
+    export_filename = f"KM_{analysis_type}_for_SPSS.xlsx"
+    export_df = data[["Time", "Event", "Group"]]
+
+    # Hiển thị bảng trước khi export
+    st.dataframe(export_df)
+
+    # Nút tải file
+    @st.cache_data
+    def convert_df_to_excel(df):
+        from io import BytesIO
+
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="KM_data")
+        return output.getvalue()
+
+    excel_data = convert_df_to_excel(export_df)
+    st.download_button(
+        label="📥 Tải dữ liệu Excel cho SPSS",
+        data=excel_data,
+        file_name=export_filename,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
